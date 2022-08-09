@@ -179,9 +179,19 @@ def show_post(post_id):
     return render_template("post.html", post=requested_post, form=comment_form, is_logged=current_user.is_authenticated)
 
 
+@app.route("/gallery")
+def get_all_images():
+    return render_template('gallery.html')
+
+
+@app.route("/location")
+def show_location():
+    pass
+
+
 @app.route("/about")
 def about():
-    return render_template("about.html", is_logged=False)
+    return render_template("about.html", is_logged=current_user.is_authenticated)
 
 
 @app.route("/contact")
