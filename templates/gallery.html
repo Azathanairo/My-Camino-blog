@@ -21,17 +21,16 @@
 
     <div class="row gy-4 justify-content-center">
 
-
+      {% for image in thumbnails: %}
       <div class="col-xl-3 col-lg-4 col-md-6">
         <div class="gallery-item h-100">
-          <img src="{{ url_for('static', filename='img/about-bg.jpg') }}" class="img-fluid" alt="">
+          <img src="{{ image }}" class="img-fluid" alt="">
           <div class="gallery-links d-flex align-items-center justify-content-center">
-            <a href="{{ url_for('static', filename='img/about-bg.jpg') }}" title="Gallery 1" class="glightbox preview-link"><i class="bi bi-arrows-angle-expand"></i></a>
+            <a href="{{ url_for('static', filename='img/about-bg.jpg')}}" title="Gallery 1" class="glightbox preview-link"><i class="bi bi-arrows-angle-expand"></i></a>
           </div>
         </div>
-
-
       </div><!-- End Gallery Item -->
+      {% endfor %}
 
     </div>
 
