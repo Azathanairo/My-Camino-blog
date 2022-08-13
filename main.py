@@ -10,8 +10,7 @@ from forms import CreatePostForm, CreateRegisterForm, CreateLoginForm, CreateCom
 from flask_gravatar import Gravatar
 from functools import wraps
 from dotenv import load_dotenv
-from google.oauth2 import service_account
-from googleapiclient.discovery import build
+import requests
 import os
 
 load_dotenv()
@@ -182,19 +181,7 @@ def show_post(post_id):
 
 @app.route("/gallery")
 def get_all_images():
-    scopes = ["https://www.googleapis.com/auth/drive"]
-
-    credentials = service_account.Credentials.from_service_account_file("credentials.json")
-    scoped_creds = credentials.with_scopes(scopes)
-
-    with build('drive', 'v3', credentials=scoped_creds) as service:
-        collection = service.files()
-        request = collection.list(fields="*")
-        response = request.execute()
-        files = [file["thumbnailLink"] for file in response["files"] if
-                 "image" in file["mimeType"] and file["shared"] == True]
-
-    return render_template('gallery.html', thumbnails=files)
+    return render_template('gallery.html')
 
 
 @app.route("/location")
