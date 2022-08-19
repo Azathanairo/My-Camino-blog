@@ -15,6 +15,8 @@ import os
 
 load_dotenv()
 
+CONTENTFUL_ENDPOINT = "https://cdn.contentful.com"
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('APP_SECRET_KEY')
 ckeditor = CKEditor(app)
@@ -181,7 +183,11 @@ def show_post(post_id):
 
 @app.route("/gallery")
 def get_all_images():
-    return render_template('gallery.html')
+    with requests.get(f"{CONTENTFUL_ENDPOINT}/spaces/{os.environ.get('SPACE_ID')}/environments/master/assets",
+                      headers={"Authorization": f"Bearer {os.environ.get('DELIVERY_API_KEY')}"}) as response:
+        content = response.json()
+    images = [url["fields"]["file"]["url"] for url in content["items"]]
+    return render_template('gallery.html', files=images, is_logged=current_user.is_authenticated)
 
 
 @app.route("/location")
