@@ -10,6 +10,7 @@ from forms import CreatePostForm, CreateRegisterForm, CreateLoginForm, CreateCom
 from flask_gravatar import Gravatar
 from functools import wraps
 from dotenv import load_dotenv
+from random import choice
 import requests
 import os
 
@@ -34,6 +35,7 @@ gravatar = Gravatar(app,
                     use_ssl=False,
                     base_url=None
                     )
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -89,6 +91,14 @@ class Comment(db.Model):
 
     post_id = db.Column(db.Integer, db.ForeignKey("blog_posts.id"))
     post = relationship("BlogPost", back_populates="comments")
+
+
+class Image(db.Model):
+    __tablename__ = "gallery"
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.Text, nullable=False)
+    created = db.Column(db.String, nullable=False)
+    filepath = db.Column(db.Text, nullable=True)
 
 
 db.create_all()
@@ -187,7 +197,21 @@ def get_all_images():
                       headers={"Authorization": f"Bearer {os.environ.get('DELIVERY_API_KEY')}"}) as response:
         content = response.json()
     images = [url["fields"]["file"]["url"] for url in content["items"]]
-    return render_template('gallery.html', files=images, is_logged=current_user.is_authenticated)
+    rnd_image = choice(images)
+    return render_template('gallery.html', files=images, is_logged=current_user.is_authenticated, bg_image=rnd_image)
+
+
+@app.route("/update_gallery")
+def update_gallery():
+    # TODO 1 dodělat tlačítko  na update databáze s obrázky (omezí se tím počet requestů na API při každém otevření
+    #  galerie)
+    pass
+
+
+@app.route("/archive")
+def archive_images():
+    # TODO 1 dodělat tlačítko  na archivování obrázků do nové složky
+    pass
 
 
 @app.route("/location")
