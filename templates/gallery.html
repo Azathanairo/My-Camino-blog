@@ -1,7 +1,7 @@
 {% include "header.html" %}
 
 <!-- Page Header -->
-<header class="masthead" style="background-image: url({{ bg_image }})">
+<header class="masthead" style="background-image: url({{ bg_image.url }})">
   <div class="overlay"></div>
   <div class="container">
     <div class="row">
@@ -19,10 +19,10 @@
 <div class="container">
   {% if current_user.id == 1 %}
   <div class="clearfix" style="display: inline-flex">
-    <a class="btn btn-primary float-right" href="#">Archive Photos</a>
+    <a class="btn btn-primary float-right" href="{{ url_for('archive_images') }}">Archive Photos</a>
   </div>
   <div class="clearfix" style="display: inline-flex">
-    <a class="btn btn-primary float-right" href="#">Update Gallery</a>
+    <a class="btn btn-primary float-right" href="{{ url_for('update_gallery') }}">Update Gallery</a>
   </div>
   {% endif %}
 </div>
@@ -33,9 +33,9 @@
       {% for image in files: %}
       <div class="col-xl-3 col-lg-4 col-md-6">
         <div class="gallery-item">
-          <img src="{{ image }}?w=600&h=400&fit=thumb&fl=progressive" class="img-fluid" alt="" loading="lazy">
+          <img src="{{ image.url }}?w=600&h=400&fit=thumb&fl=progressive" class="img-fluid" alt="" loading="lazy">
           <div class="gallery-links d-flex align-items-center justify-content-center">
-            <a href="{{ image }}" title="Gallery 1" class="glightbox preview-link"><i class="bi bi-arrows-angle-expand"></i></a>
+            <a href="{{ image.url }}" title="Gallery 1" class="glightbox preview-link"><i class="bi bi-arrows-angle-expand"></i></a>
           </div>
         </div>
       </div><!-- End Gallery Item -->

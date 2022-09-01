@@ -96,9 +96,11 @@ class Comment(db.Model):
 class Image(db.Model):
     __tablename__ = "gallery"
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    asset_id = db.Column(db.String(255), nullable=False)
     url = db.Column(db.Text, nullable=False)
     created = db.Column(db.String, nullable=False)
-    filepath = db.Column(db.Text, nullable=True)
+    week = db.Column(db.Text, nullable=True)
 
 
 db.create_all()
@@ -121,6 +123,7 @@ def get_all_posts():
     return render_template("index.html", all_posts=posts, is_logged=current_user.is_authenticated)
 
 
+# MENU SITES
 @app.route('/register', methods=["GET", "POST"])
 def register():
     register_form = CreateRegisterForm()
@@ -172,6 +175,7 @@ def logout():
     return redirect(url_for('get_all_posts'))
 
 
+# SUBSITES - POSTS
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 def show_post(post_id):
     requested_post = BlogPost.query.get(post_id)
@@ -191,31 +195,53 @@ def show_post(post_id):
     return render_template("post.html", post=requested_post, form=comment_form, is_logged=current_user.is_authenticated)
 
 
+# SUBSITES - GALLERY
 @app.route("/gallery")
 def get_all_images():
-    with requests.get(f"{CONTENTFUL_ENDPOINT}/spaces/{os.environ.get('SPACE_ID')}/environments/master/assets",
-                      headers={"Authorization": f"Bearer {os.environ.get('DELIVERY_API_KEY')}"}) as response:
-        content = response.json()
-    images = [url["fields"]["file"]["url"] for url in content["items"]]
-    rnd_image = choice(images)
+    images = Image.query.all()
+
+    try:
+        rnd_image = choice(images)
+    except IndexError:
+        rnd_image = ""
     return render_template('gallery.html', files=images, is_logged=current_user.is_authenticated, bg_image=rnd_image)
 
 
 @app.route("/update_gallery")
+@admin_only
 def update_gallery():
-    # TODO 1 dodělat tlačítko  na update databáze s obrázky (omezí se tím počet requestů na API při každém otevření
-    #  galerie)
-    pass
+    with requests.get(f"{CONTENTFUL_ENDPOINT}/spaces/{os.environ.get('SPACE_ID')}/environments/master/assets",
+                      headers={"Authorization": f"Bearer {os.environ.get('DELIVERY_API_KEY')}"}) as response:
+        content = response.json()
+        print(content)
+    id_collection = [image["sys"]["id"] for image in content["items"]]
+    image_db = Image.query.all()
+
+    for image in image_db:
+        if image.asset_id not in id_collection:
+            db.session.delete(image)
+            db.session.commit()
+
+    for image in content["items"]:
+        search = Image.query.filter_by(asset_id=image["sys"]["id"]).first()
+        if search is None:
+            new_image = Image(
+                name=image["fields"]["file"]["fileName"],
+                asset_id=image["sys"]["id"],
+                url=image["fields"]["file"]["url"],
+                created=image["sys"]["createdAt"]
+            )
+            db.session.add(new_image)
+            db.session.commit()
+        else:
+            pass
+
+    return redirect(url_for('get_all_images'))
 
 
 @app.route("/archive")
 def archive_images():
     # TODO 1 dodělat tlačítko  na archivování obrázků do nové složky
-    pass
-
-
-@app.route("/location")
-def show_location():
     pass
 
 

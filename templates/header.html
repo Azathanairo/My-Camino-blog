@@ -40,6 +40,9 @@
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('get_all_posts') }}">Home</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('get_all_images') }}">Gallery</a>
+          </li>
           {% if not is_logged: %}
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('login') }}">Login</a>
@@ -50,16 +53,13 @@
           {% endif %}
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('logout') }}">Log Out</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('get_all_images') }}">Gallery</a>
-          </li>
+          </li>          
 <!--          <li class="nav-item">-->
 <!--            <a class="nav-link" href="#">Location</a>-->
 <!--          </li>-->
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('about') }}">About</a>
-          </li>
+<!--          <li class="nav-item">-->
+<!--            <a class="nav-link" href="{{ url_for('about') }}">About</a>-->
+<!--          </li>-->
           <!-- <li class="nav-item">
             <a class="nav-link" href="{{ url_for('contact') }}">Contact</a>
           </li> -->
