@@ -257,8 +257,13 @@ def delete_comment(comment_id, post_id):
 @app.route("/gallery")
 def get_all_images():
     images = Image.query.all()
-    weeks_list = [week[0] for week in db.session.query(Image.week).distinct()]
-    week_images = [image for image in images if image.week == request.args.get("week")]
+    weeks_list = [int(week[0]) for week in db.session.query(Image.week).distinct()]
+    weeks_list.sort(reverse=True)
+
+    if request.args.get("week") is None:
+        week_images = [image for image in images if image.week == "0"]
+    else:
+        week_images = [image for image in images if image.week == request.args.get("week")]
 
     try:
         rnd_image = choice(images)
@@ -294,7 +299,8 @@ def update_gallery():
                 name=image["fields"]["file"]["fileName"],
                 asset_id=image["sys"]["id"],
                 url=image["fields"]["file"]["url"],
-                created=image["sys"]["createdAt"]
+                created=image["sys"]["createdAt"],
+                week=0,
             )
             db.session.add(new_image)
             db.session.commit()
@@ -313,8 +319,7 @@ def update_img_week():
         image_db = Image.query.all()
 
         for image in image_db:
-            print(image.week)
-            if image.week is None:
+            if image.week == 0:
                 image.week = request.form["week"]
 
         db.session.commit()
