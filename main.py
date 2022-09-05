@@ -69,7 +69,7 @@ class BlogPost(db.Model):
 
     # Create Foreign Key, "users.id" the users refers to the tablename of User.
     author_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-    # Create reference to the User object, the "posts" refers to the posts protperty in the User class.
+    # Create reference to the User object, the "posts" refers to the posts property in the User class.
     author = relationship("User", back_populates="posts")
 
     # author = db.Column(db.String(250), nullable=False)
@@ -137,8 +137,8 @@ def register():
             salt_length=8
         )
         new_user = User(
-            name=request.form["name"],
-            surname=request.form["surname"],
+            name=request.form["name"].title(),
+            surname=request.form["surname"].title(),
             email=request.form["email"],
             password=password_salted_hashed,
         )
@@ -201,6 +201,7 @@ def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():
         new_post = BlogPost(
+            author=current_user,
             title=form.title.data,
             subtitle=form.subtitle.data,
             body=form.body.data,
@@ -244,7 +245,7 @@ def delete_post(post_id):
 
 
 @app.route("/delete/<int:post_id>/<int:comment_id>")
-@admin_only
+@login_required
 def delete_comment(comment_id, post_id):
     comment_to_delete = Comment.query.get(comment_id)
     db.session.delete(comment_to_delete)
