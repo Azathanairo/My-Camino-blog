@@ -319,7 +319,7 @@ def update_img_week():
         image_db = Image.query.all()
 
         for image in image_db:
-            if image.week == 0:
+            if image.week == "0":
                 image.week = request.form["week"]
 
         db.session.commit()
