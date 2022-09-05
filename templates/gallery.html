@@ -19,13 +19,24 @@
 <div class="container">
   {% if current_user.id == 1 %}
   <div class="clearfix" style="display: inline-flex">
-    <a class="btn btn-primary float-right" href="{{ url_for('archive_images') }}">Archive Photos</a>
+    <a class="btn btn-primary float-right" href="{{ url_for('update_img_week') }}">Update Photos' Week</a>
   </div>
   <div class="clearfix" style="display: inline-flex">
     <a class="btn btn-primary float-right" href="{{ url_for('update_gallery') }}">Update Gallery</a>
   </div>
+  <br><br>
   {% endif %}
+  {% for week in weeks: %}
+  <div class="clearfix" style="display: inline-flex">
+    <div class="row gy-4 justify-content-center">
+      <div class="col-xl-3 col-lg-4 col-md-6">
+        <a class="btn btn-primary float-right" href="{{ url_for('get_all_images', week=week) }}">Week {{ week }}</a>
+      </div>
+    </div>
+  </div><!-- End Gallery Item -->
+  {% endfor %}
 </div>
+<hr>
 <section id="gallery" class="gallery">
   <div class="container-fluid">
 

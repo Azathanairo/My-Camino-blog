@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, HiddenField
+from wtforms import StringField, SubmitField, PasswordField, IntegerField
 from wtforms.validators import DataRequired, URL, Email, EqualTo
 from flask_ckeditor import CKEditorField
 
@@ -33,3 +33,8 @@ class CreateLoginForm(FlaskForm):
 class CreateCommentForm(FlaskForm):
     comment = CKEditorField("Comment", validators=[DataRequired()])
     submit = SubmitField("Submit Comment")
+
+
+class EditImageWeek(FlaskForm):
+    week = IntegerField("Week #", validators=[DataRequired()])
+    submit = SubmitField("Update")

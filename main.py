@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, CreateRegisterForm, CreateLoginForm, CreateCommentForm
+from forms import CreatePostForm, CreateRegisterForm, CreateLoginForm, CreateCommentForm, EditImageWeek
 from flask_gravatar import Gravatar
 from functools import wraps
 from dotenv import load_dotenv
@@ -195,66 +195,6 @@ def show_post(post_id):
     return render_template("post.html", post=requested_post, form=comment_form, is_logged=current_user.is_authenticated)
 
 
-# SUBSITES - GALLERY
-@app.route("/gallery")
-def get_all_images():
-    images = Image.query.all()
-
-    try:
-        rnd_image = choice(images)
-    except IndexError:
-        rnd_image = ""
-    return render_template('gallery.html', files=images, is_logged=current_user.is_authenticated, bg_image=rnd_image)
-
-
-@app.route("/update_gallery")
-@admin_only
-def update_gallery():
-    with requests.get(f"{CONTENTFUL_ENDPOINT}/spaces/{os.environ.get('SPACE_ID')}/environments/master/assets",
-                      headers={"Authorization": f"Bearer {os.environ.get('DELIVERY_API_KEY')}"}) as response:
-        content = response.json()
-        print(content)
-    id_collection = [image["sys"]["id"] for image in content["items"]]
-    image_db = Image.query.all()
-
-    for image in image_db:
-        if image.asset_id not in id_collection:
-            db.session.delete(image)
-            db.session.commit()
-
-    for image in content["items"]:
-        search = Image.query.filter_by(asset_id=image["sys"]["id"]).first()
-        if search is None:
-            new_image = Image(
-                name=image["fields"]["file"]["fileName"],
-                asset_id=image["sys"]["id"],
-                url=image["fields"]["file"]["url"],
-                created=image["sys"]["createdAt"]
-            )
-            db.session.add(new_image)
-            db.session.commit()
-        else:
-            pass
-
-    return redirect(url_for('get_all_images'))
-
-
-@app.route("/archive")
-def archive_images():
-    # TODO 1 dodělat tlačítko  na archivování obrázků do nové složky
-    pass
-
-
-@app.route("/about")
-def about():
-    return render_template("about.html", is_logged=current_user.is_authenticated)
-
-
-@app.route("/contact")
-def contact():
-    return render_template("contact.html", is_logged=current_user.is_authenticated)
-
-
 @app.route("/new-post", methods=["GET", "POST"])
 @admin_only
 def add_new_post():
@@ -310,6 +250,86 @@ def delete_comment(comment_id, post_id):
     db.session.delete(comment_to_delete)
     db.session.commit()
     return redirect(url_for('show_post', post_id=post_id))
+
+
+# SUBSITES - GALLERY
+@app.route("/gallery")
+def get_all_images():
+    images = Image.query.all()
+    weeks_list = [week[0] for week in db.session.query(Image.week).distinct()]
+    week_images = [image for image in images if image.week == request.args.get("week")]
+
+    try:
+        rnd_image = choice(images)
+    except IndexError:
+        rnd_image = ""
+
+    return render_template('gallery.html',
+                           files=week_images,
+                           is_logged=current_user.is_authenticated,
+                           bg_image=rnd_image,
+                           weeks=weeks_list)
+
+
+@app.route("/update-gallery")
+@admin_only
+def update_gallery():
+    with requests.get(f"{CONTENTFUL_ENDPOINT}/spaces/{os.environ.get('SPACE_ID')}/environments/master/assets",
+                      headers={"Authorization": f"Bearer {os.environ.get('DELIVERY_API_KEY')}"}) as response:
+        content = response.json()
+
+    id_collection = [image["sys"]["id"] for image in content["items"]]
+    image_db = Image.query.all()
+
+    for image in image_db:
+        if image.asset_id not in id_collection:
+            db.session.delete(image)
+            db.session.commit()
+
+    for image in content["items"]:
+        search = Image.query.filter_by(asset_id=image["sys"]["id"]).first()
+        if search is None:
+            new_image = Image(
+                name=image["fields"]["file"]["fileName"],
+                asset_id=image["sys"]["id"],
+                url=image["fields"]["file"]["url"],
+                created=image["sys"]["createdAt"]
+            )
+            db.session.add(new_image)
+            db.session.commit()
+        else:
+            pass
+
+    return redirect(url_for('get_all_images'))
+
+
+@app.route("/update-img-week", methods=["GET", "POST"])
+@admin_only
+def update_img_week():
+    img_update_form = EditImageWeek()
+
+    if img_update_form.validate_on_submit():
+        image_db = Image.query.all()
+
+        for image in image_db:
+            print(image.week)
+            if image.week is None:
+                image.week = request.form["week"]
+
+        db.session.commit()
+        return redirect(url_for('get_all_images'))
+
+    return render_template("img-week-update.html", form=img_update_form, is_logged=current_user.is_authenticated)
+
+
+@app.route("/about")
+def about():
+    return render_template("about.html", is_logged=current_user.is_authenticated)
+
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html", is_logged=current_user.is_authenticated)
 
 
 if __name__ == "__main__":
