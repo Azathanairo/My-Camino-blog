@@ -262,8 +262,10 @@ def get_all_images():
 
     if request.args.get("week") is None:
         week_images = [image for image in images if image.week == "0"]
+        week_images_reversed = week_images[::-1]
     else:
         week_images = [image for image in images if image.week == request.args.get("week")]
+        week_images_reversed = week_images[::-1]
 
     try:
         rnd_image = choice(images)
@@ -271,7 +273,7 @@ def get_all_images():
         rnd_image = ""
 
     return render_template('gallery.html',
-                           files=week_images,
+                           files=week_images_reversed,
                            is_logged=current_user.is_authenticated,
                            bg_image=rnd_image,
                            weeks=weeks_list)
